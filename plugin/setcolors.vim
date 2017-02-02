@@ -29,7 +29,7 @@ function! s:SetColors(args)
       let i += 5
     endwhile
   elseif a:args == 'all'
-    let paths = split(globpath(&runtimepath, 'colors/*.vim'), "\n")
+    let paths = split(globpath(&runtimepath, 'bundle/vim-colorschemes/colors/*.vim'), "\n")
     let s:mycolors = map(paths, 'fnamemodify(v:val, ":t:r")')
     echo 'List of colors set from all installed color schemes'
   elseif a:args == 'my'
