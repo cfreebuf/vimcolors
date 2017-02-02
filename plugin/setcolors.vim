@@ -16,7 +16,11 @@ if v:version < 700 || exists('loaded_setcolors') || &cp
 endif
 
 let loaded_setcolors = 1
-let s:mycolors = ['slate', 'torte', 'darkblue', 'delek', 'murphy', 'elflord', 'pablo', 'koehler']  " colorscheme names that we use to set color
+" let s:mycolors = ['slate', 'torte', 'darkblue', 'delek', 'murphy', 'elflord', 'pablo', 'koehler']  " colorscheme names that we use to set color
+" let s:mycolors = []
+let paths = split(globpath(&runtimepath, 'bundle/vim-colorschemes/colors/*.vim'), "\n")
+let s:mycolors = map(paths, 'fnamemodify(v:val, ":t:r")')
+let s:last = 0
 
 " Set list of color scheme names that we will use, except
 " argument 'now' actually changes the current color scheme.
@@ -61,14 +65,13 @@ function! s:NextColor(how, echo_color)
   if len(s:mycolors) == 0
     call s:SetColors('all')
   endif
-  if exists('g:colors_name')
-    let current = index(s:mycolors, g:colors_name)
-  else
-    let current = -1
-  endif
   let missing = []
   let how = a:how
+  let current = s:last
   for i in range(len(s:mycolors))
+    if exists('g:colors_name') && g:colors_name == s:mycolors[i]
+        let current = i
+    endif
     if how == 0
       let current = localtime() % len(s:mycolors)
       let how = 1  " in case random color does not exist
@@ -81,7 +84,8 @@ function! s:NextColor(how, echo_color)
     try
       execute 'colorscheme '.s:mycolors[current]
       break
-    catch /E185:/
+    catch /E/
+      echo 'exec colorscheme' s:mycolors[current] 'error'
       call add(missing, s:mycolors[current])
     endtry
   endfor
@@ -89,9 +93,14 @@ function! s:NextColor(how, echo_color)
   if len(missing) > 0
     echo 'Error: colorscheme not found:' join(missing)
   endif
-  if (a:echo_color)
-    echo g:colors_name
-  endif
+
+  try
+    echo 'use colorschema[' current ':' len(s:mycolors) ']' g:colors_name
+  catch /E/
+    echo 'no colorschema selected'
+  endtry
+
+  let s:last = current
 endfunction
 
 nnoremap <F8> :call NextColor(1)<CR>
