@@ -1,0 +1,2 @@
+# vimcolors
+set vim colors
